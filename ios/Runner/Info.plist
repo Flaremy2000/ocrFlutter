@@ -45,21 +45,19 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>App necesita acceso a tu galería para guardar archivos.</string>
 	<key>NSDocumentsFolderUsageDescription</key>
 	<string>App necesita acceso a la carpeta de documentos para guardar archivos.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+	  <key>NSAllowsArbitraryLoads</key>
+	  <true/>
+	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+	  <string>fetch</string>
+	  <string>processing</string>
+	</array>
 </dict>
-<key>NSAppTransportSecurity</key>
-<dict>
-  <key>NSAllowsArbitraryLoads</key>
-  <true/>
-</dict>
-<key>UIBackgroundModes</key>
-<array>
-  <string>fetch</string>
-  <string>processing</string>
-</array>
-
 </plist>
