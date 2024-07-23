@@ -16,6 +16,7 @@ class MainScreen extends StatefulWidget{
 
 class _MainScreenState extends State<MainScreen>{
   int _selectedIndex = 0;
+  String? userType;
 
   static final List<Widget> _widgetOptions = <Widget>[
     const Home(),
@@ -25,15 +26,36 @@ class _MainScreenState extends State<MainScreen>{
     const UserGesture(),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _initializeUser();
+  }
+
   void _onItemTapped(int index){
     setState(() {
       _selectedIndex = index;
     });
   }
 
+    Future<void> _initializeUser() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.getCurrentUser();
+    final user = authProvider.currentUser;
+    if (user != null) {
+      setState(() {
+        userType = user['user_type'];
+      });
+    } else {
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return WebMainScreen(selectedIndex: _selectedIndex, onItemTapped: _onItemTapped);
+    return WebMainScreen(selectedIndex: _selectedIndex, onItemTapped: _onItemTapped, userType: userType);
   }
 
 }
@@ -41,8 +63,9 @@ class _MainScreenState extends State<MainScreen>{
 class WebMainScreen extends StatelessWidget{
   final int selectedIndex;
   final Function(int) onItemTapped;
+  final String? userType;
 
-  const WebMainScreen({required this.selectedIndex, required this.onItemTapped, super.key});
+  const WebMainScreen({required this.selectedIndex, required this.onItemTapped, this.userType, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -109,14 +132,15 @@ class WebMainScreen extends StatelessWidget{
                 Navigator.pop(context);
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.social_distance_outlined, color: Color(0xFF0F33B4),),
-              title: const Text('Gestión de usuario', style: TextStyle(color: Color(0xC3000022)) ),
-              onTap: () {
-                onItemTapped(4);
-                Navigator.pop(context);
-              },
-            ),
+            if(userType == 'Admin')
+              ListTile(
+                leading: const Icon(Icons.social_distance_outlined, color: Color(0xFF0F33B4),),
+                title: const Text('Gestión de usuario', style: TextStyle(color: Color(0xC3000022)) ),
+                onTap: () {
+                  onItemTapped(4);
+                  Navigator.pop(context);
+                },
+              ),
           ],
         ),
       ),
