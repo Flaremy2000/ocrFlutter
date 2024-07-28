@@ -63,6 +63,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> fetchRecentDocuments({String? query}) async {
+    int perPage = 8;
     fileProvider?.setToken(authProvider?.token);
     if (authProvider!.expiredToken || authProvider!.currentUser == null) {
       Navigator.of(context).pushReplacementNamed('/');
@@ -73,8 +74,10 @@ class _HomeState extends State<Home> {
     setState(() {
       isLoading = true;
     });
+    
+    perPage = query != null ? 8 : 100;
 
-    await fileProvider?.fetchDocuments(perPage: 8, page: 1, dateDesc: true, q: query);
+    await fileProvider?.fetchDocuments(perPage: perPage, page: 1, dateDesc: true, q: query);
 
     if (fileProvider!.expiredToken) {
       Navigator.of(context).pushReplacementNamed('/');
