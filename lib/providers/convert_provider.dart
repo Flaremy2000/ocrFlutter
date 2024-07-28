@@ -58,14 +58,14 @@ class ConversionProvider with ChangeNotifier {
         if (kDebugMode) {
           print('Error iniciando conversion: ${response.statusCode}');
         }
-        Future.delayed(const Duration(seconds: 10), () => _updateStatus(false, ''));
+        Future.delayed(const Duration(seconds: 3), () => _updateStatus(false, ''));
       }
     }catch(e){
       _updateStatus(true, 'Error al iniciar la conversión.');
       if (kDebugMode) {
         print(e);
       }
-      Future.delayed(const Duration(seconds: 10), () => _updateStatus(false, ''));
+      Future.delayed(const Duration(seconds: 3), () => _updateStatus(false, ''));
     }
   }
 
@@ -85,14 +85,14 @@ class ConversionProvider with ChangeNotifier {
         _updateStatus(true, 'Conversión finalizada. Esperando resultados...');
         downloadFile(jobDetails['target_files'][0]['id'], targetFormat);
       } else {
-        Future.delayed(const Duration(seconds: 60), () => checkJobStatus(jobId, targetFormat));
+        Future.delayed(const Duration(seconds: 30), () => checkJobStatus(jobId, targetFormat));
       }
     } else {
         _updateStatus(true, 'Error obteniendo el estado de la conversion.');
       if (kDebugMode) {
         print('Error revisando el estado del trabajo: ${response.statusCode}');
       }
-      Future.delayed(const Duration(seconds: 10), () => _updateStatus(false, ''));
+      Future.delayed(const Duration(seconds: 3), () => _updateStatus(false, ''));
     }
   }
 
@@ -111,12 +111,13 @@ class ConversionProvider with ChangeNotifier {
       } else {
         _saveFileOnMobile(fileBytes, 'fileconvert${formatDateTime(DateTime.now())}.$targetFormat');
       }
+      Future.delayed(const Duration(seconds: 3), () => _updateStatus(false, ''));
     } else {
       _updateStatus(true, 'Fallo al descargar el archivo.');
       if (kDebugMode) {
         print('Failed to download file: ${response.statusCode}');
       }
-        Future.delayed(const Duration(seconds: 10), () => _updateStatus(false, ''));
+        Future.delayed(const Duration(seconds: 3), () => _updateStatus(false, ''));
       }
 
   }
@@ -150,16 +151,17 @@ class ConversionProvider with ChangeNotifier {
         if (kDebugMode) {
           print('Access to the directory is denied');
         }
-        Future.delayed(const Duration(seconds: 10), () => _updateStatus(false, ''));
+        Future.delayed(const Duration(seconds: 3), () => _updateStatus(false, ''));
       }
     } else {
       _updateStatus(true, 'No hay los permisos necesarios para guardar la conversion.');
       if (kDebugMode) {
         print('Storage permission is denied');
       }
-      Future.delayed(const Duration(seconds: 10), () => _updateStatus(false, ''));
+      Future.delayed(const Duration(seconds: 3), () => _updateStatus(false, ''));
     }
-
+    
+    Future.delayed(const Duration(seconds: 3), () => _updateStatus(false, ''));
   }
 
   String formatDateTime(DateTime dateTime) {

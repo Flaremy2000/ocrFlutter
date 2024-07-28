@@ -407,14 +407,15 @@ class _UploadFileState extends State<UploadFile> {
 
   Future<void> _takePhoto() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? photo = await picker.pickImage(source: ImageSource.camera);
+    final XFile? photo = await picker.pickImage(source: ImageSource.camera, imageQuality: 50);
     
     if (photo != null) {
-      bool proceed = false;
-      dynamic croppedFile;
+      dynamic selectedFile = io.File(photo.path);
+      
+      bool shouldCrop = await _confirmImage(photo.path);
 
-      while(!proceed){
-        croppedFile = await ImageCropper().cropImage(
+      if(shouldCrop){
+        dynamic croppedFile = await ImageCropper().cropImage(
           sourcePath: photo.path,
           aspectRatioPresets: [
             CropAspectRatioPreset.square,
@@ -436,20 +437,21 @@ class _UploadFileState extends State<UploadFile> {
         );
         
         if (croppedFile != null) {
-          proceed = await _confirmImage(croppedFile.path);
-        } else {
-          return;
+          selectedFile = io.File(croppedFile.path);
         }
+      }
 
-        if(croppedFile != null){
-          setState(() {
-            selectedFile = io.File(croppedFile.path);
-          }); 
-        }
-        
-        final userId = user?['id'];
+      setState(() {
+        this.selectedFile = selectedFile;
+      });
+      
+      final userId = user?['id'];
       if (userId != null) {
+        _showLoadingDialog(context);
         await fileProvider?.addDocument(selectedFile.path, userId, currentSubFolderId!);
+        
+        Navigator.of(context).pop();
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(backgroundColor: Color(0xFFFFF3F8), content: Text('Documento subido correctamente', style: TextStyle(color: Color(0xC3000022)))),
         );
@@ -457,12 +459,12 @@ class _UploadFileState extends State<UploadFile> {
         setState(() {
           selectedFile = null;
         });
-        await _fetchDocuments(currentSubFolderId!);
+
+        await _fetchDocuments(currentSubFolderId!, reset: true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(backgroundColor: Color(0xFFFFF3F8), content: Text('No se pudo obtener el usuario actual', style: TextStyle(color: Color(0xC3000022)))),);
       }
-    }
   }
 }
 
@@ -476,14 +478,33 @@ Future<bool> _confirmImage(String imagePath) async {
         content: Image.file(io.File(imagePath)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Retomar", style: TextStyle(color: Color(0xC3000022))),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text("Recortar", style: TextStyle(color: Color(0xC3000022))),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(context).pop(false),
             child: const Text("Usar Imagen", style: TextStyle(color: Color(0xC3000022))),
           ),
         ],
+      );
+    },
+  );
+}
+
+Future<void> _showLoadingDialog(BuildContext context) async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // El diálogo no se puede descartar tocando fuera
+    builder: (BuildContext context) {
+      return const AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text('Subiendo imagen...')
+          ],
+        ),
       );
     },
   );

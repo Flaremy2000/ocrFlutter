@@ -83,7 +83,7 @@ Future<void> setPerPage(int perPage, int subfolderId) async {
     if(kIsWeb){
         request.files.add(http.MultipartFile.fromBytes('document_content', file['bytes'] as Uint8List, filename: file['name']));
     }else{
-      request.files.add(await http.MultipartFile.fromPath('document_content', file as String));
+      request.files.add(await http.MultipartFile.fromPath('document_content', file));
     }
 
     request.headers.addAll({
@@ -97,6 +97,11 @@ Future<void> setPerPage(int perPage, int subfolderId) async {
     } else if(response.statusCode == 401) {
       expiredToken = false;
       token = null;
+    }else{
+      if (kDebugMode) {
+        print(await response.stream.bytesToString());
+        print(response.reasonPhrase);
+      }
     }
     notifyListeners();
   }
